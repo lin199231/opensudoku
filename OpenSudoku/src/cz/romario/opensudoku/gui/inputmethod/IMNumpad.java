@@ -20,6 +20,7 @@
 
 package cz.romario.opensudoku.gui.inputmethod;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ import android.widget.ImageButton;
 import cz.romario.opensudoku.R;
 import cz.romario.opensudoku.game.Cell;
 import cz.romario.opensudoku.game.CellCollection;
+import cz.romario.opensudoku.game.CellGroup;
 import cz.romario.opensudoku.game.CellNote;
 import cz.romario.opensudoku.game.SudokuGame;
 import cz.romario.opensudoku.game.CellCollection.OnChangeListener;
@@ -49,11 +51,17 @@ public class IMNumpad extends InputMethod {
 	private static final int MODE_EDIT_NOTE = 1;
 
 	private Cell mSelectedCell;
+	private CellNote mNote;
+	private CellGroup mSector;
+	private CellGroup mRow;
+	private CellGroup mColumn;
+	private ArrayList<Integer> notelist;
 	private ImageButton mSwitchNumNoteButton;
 
 	private int mEditMode = MODE_EDIT_VALUE;
 
 	private Map<Integer, Button> mNumberButtons;
+	private Map<Integer, Button> mNoteButtons;
 
 	public boolean isMoveCellSelectionOnPress() {
 		return moveCellSelectionOnPress;
@@ -68,9 +76,10 @@ public class IMNumpad extends InputMethod {
 	}
 
 	/**
-	 * If set to true, buttons for numbers, which occur in {@link CellCollection}
-	 * more than {@link CellCollection#SUDOKU_SIZE}-times, will be highlighted.
-	 *
+	 * If set to true, buttons for numbers, which occur in
+	 * {@link CellCollection} more than {@link CellCollection#SUDOKU_SIZE}
+	 * -times, will be highlighted.
+	 * 
 	 * @param highlightCompletedValues
 	 */
 	public void setHighlightCompletedValues(boolean highlightCompletedValues) {
@@ -87,7 +96,7 @@ public class IMNumpad extends InputMethod {
 
 	@Override
 	protected void initialize(Context context, IMControlPanel controlPanel,
-							  SudokuGame game, SudokuBoardView board, HintsQueue hintsQueue) {
+			SudokuGame game, SudokuBoardView board, HintsQueue hintsQueue) {
 		super.initialize(context, controlPanel, game, board, hintsQueue);
 
 		game.getCells().addOnChangeListener(mOnCellsChangeListener);
@@ -95,33 +104,54 @@ public class IMNumpad extends InputMethod {
 
 	@Override
 	protected View createControlPanelView() {
-		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LayoutInflater inflater = (LayoutInflater) mContext
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View controlPanel = inflater.inflate(R.layout.im_numpad, null);
 
 		mNumberButtons = new HashMap<Integer, Button>();
-		mNumberButtons.put(1, (Button) controlPanel.findViewById(R.id.button_1));
-		mNumberButtons.put(2, (Button) controlPanel.findViewById(R.id.button_2));
-		mNumberButtons.put(3, (Button) controlPanel.findViewById(R.id.button_3));
-		mNumberButtons.put(4, (Button) controlPanel.findViewById(R.id.button_4));
-		mNumberButtons.put(5, (Button) controlPanel.findViewById(R.id.button_5));
-		mNumberButtons.put(6, (Button) controlPanel.findViewById(R.id.button_6));
-		mNumberButtons.put(7, (Button) controlPanel.findViewById(R.id.button_7));
-		mNumberButtons.put(8, (Button) controlPanel.findViewById(R.id.button_8));
-		mNumberButtons.put(9, (Button) controlPanel.findViewById(R.id.button_9));
-		mNumberButtons.put(0, (Button) controlPanel.findViewById(R.id.button_clear));
-
+		mNumberButtons
+				.put(1, (Button) controlPanel.findViewById(R.id.button_1));
+		mNumberButtons
+				.put(2, (Button) controlPanel.findViewById(R.id.button_2));
+		mNumberButtons
+				.put(3, (Button) controlPanel.findViewById(R.id.button_3));
+		mNumberButtons
+				.put(4, (Button) controlPanel.findViewById(R.id.button_4));
+		mNumberButtons
+				.put(5, (Button) controlPanel.findViewById(R.id.button_5));
+		mNumberButtons
+				.put(6, (Button) controlPanel.findViewById(R.id.button_6));
+		mNumberButtons
+				.put(7, (Button) controlPanel.findViewById(R.id.button_7));
+		mNumberButtons
+				.put(8, (Button) controlPanel.findViewById(R.id.button_8));
+		mNumberButtons
+				.put(9, (Button) controlPanel.findViewById(R.id.button_9));
+		mNumberButtons.put(0,
+				(Button) controlPanel.findViewById(R.id.button_clear));
+		mNoteButtons = new HashMap<Integer, Button>();
+		mNoteButtons.put(0, (Button) controlPanel.findViewById(R.id.button_S));
+		mNoteButtons.put(1, (Button) controlPanel.findViewById(R.id.button_R));
+		mNoteButtons.put(2, (Button) controlPanel.findViewById(R.id.button_C));
+		mNoteButtons.put(3, (Button) controlPanel.findViewById(R.id.button_Se));
 		for (Integer num : mNumberButtons.keySet()) {
 			Button b = mNumberButtons.get(num);
 			b.setTag(num);
 			b.setOnClickListener(mNumberButtonClick);
 		}
-
-		mSwitchNumNoteButton = (ImageButton) controlPanel.findViewById(R.id.switch_num_note);
+		for (Integer num : mNoteButtons.keySet()) {
+			Button b = mNoteButtons.get(num);
+			b.setTag(num);
+			b.setOnClickListener(mNoteButtonClicked);
+		}// ÉèÖÃ±Ê¼Ç¼àÌýÆ÷
+		mSwitchNumNoteButton = (ImageButton) controlPanel
+				.findViewById(R.id.switch_num_note);
 		mSwitchNumNoteButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				mEditMode = mEditMode == MODE_EDIT_VALUE ? MODE_EDIT_NOTE : MODE_EDIT_VALUE;
+				mEditMode = mEditMode == MODE_EDIT_VALUE ? MODE_EDIT_NOTE
+						: MODE_EDIT_VALUE;
 				update();
 			}
 
@@ -167,25 +197,55 @@ public class IMNumpad extends InputMethod {
 
 			if (selCell != null) {
 				switch (mEditMode) {
-					case MODE_EDIT_NOTE:
-						if (selNumber == 0) {
-							mGame.setCellNote(selCell, CellNote.EMPTY);
-						} else if (selNumber > 0 && selNumber <= 9) {
-							mGame.setCellNote(selCell, selCell.getNote().toggleNumber(selNumber));
+				case MODE_EDIT_NOTE:
+					if (selNumber == 0) {
+						mGame.setCellNote(selCell, CellNote.EMPTY);
+					} else if (selNumber > 0 && selNumber <= 9) {
+						mGame.setCellNote(selCell, selCell.getNote()
+								.toggleNumber(selNumber));
+					}
+					break;
+				case MODE_EDIT_VALUE:
+					if (selNumber >= 0 && selNumber <= 9) {
+						mGame.setCellValue(selCell, selNumber);
+						if (isMoveCellSelectionOnPress()) {
+							mBoard.moveCellSelectionRight();
 						}
-						break;
-					case MODE_EDIT_VALUE:
-						if (selNumber >= 0 && selNumber <= 9) {
-							mGame.setCellValue(selCell, selNumber);
-							if (isMoveCellSelectionOnPress()) {
-								mBoard.moveCellSelectionRight();
-							}
-						}
-						break;
+					}
+					break;
 				}
 			}
 		}
 
+	};
+
+	private OnClickListener mNoteButtonClicked = new OnClickListener() {
+
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			int selNote = (Integer) v.getTag();
+			Cell selCell = mSelectedCell;
+			mSector = selCell.getSector();
+			mRow = selCell.getRow();
+			mColumn = selCell.getColumn();
+			if (selCell != null) {
+				switch (selNote) {
+				case 0:
+					singleNote(selCell);
+					break;
+				case 1:
+					rowNote();
+					break;
+				case 2:
+					columnNote();
+					break;
+				case 3:
+					sectorNote();
+					break;
+				}
+			}
+		}
 	};
 
 	private OnChangeListener mOnCellsChangeListener = new OnChangeListener() {
@@ -198,15 +258,84 @@ public class IMNumpad extends InputMethod {
 		}
 	};
 
+	private void singleNote(Cell cell) {
+		mNote = new CellNote();
+		mSector = cell.getSector();
+		mRow = cell.getRow();
+		mColumn = cell.getColumn();
+		initNote();
+		ArrayList<Integer> containNum=new ArrayList<Integer>();
+		for (int i = 0; i < notelist.size(); i++) {
+			if (mSector.contains(notelist.get(i)))
+				if(containNum.indexOf(notelist.get(i))==-1)
+					containNum.add(notelist.get(i));
+		}
+		for (int i = 0; i < notelist.size(); i++) {
+			if (mRow.contains(notelist.get(i)))
+				if(containNum.indexOf(notelist.get(i))==-1)
+					containNum.add(notelist.get(i));
+		}
+		for (int i = 0; i < notelist.size(); i++) {
+			if (mColumn.contains(notelist.get(i)))
+				if(containNum.indexOf(notelist.get(i))==-1)
+					containNum.add(notelist.get(i));
+		}
+		for(int i=0;i<containNum.size();i++){
+			if(notelist.indexOf(containNum.get(i))!=-1)
+				notelist.remove(notelist.indexOf(containNum.get(i)));
+		}
+		createNote();
+		cell.setNote(mNote);
+	}
+
+	private void rowNote() {
+		Cell[] mCells = mRow.getCellGroup();
+		for (int i = 0; i < CellCollection.SUDOKU_SIZE; i++) {
+			if (mCells[i].getValue() == 0) {
+				singleNote(mCells[i]);
+			}
+		}
+	}
+
+	private void columnNote() {
+		Cell[] mCells = mColumn.getCellGroup();
+		for (int i = 0; i < CellCollection.SUDOKU_SIZE; i++) {
+			if (mCells[i].getValue() == 0) {
+				singleNote(mCells[i]);
+			}
+		}
+	}
+
+	private void sectorNote() {
+		Cell[] mCells = mSector.getCellGroup();
+		for (int i = 0; i < CellCollection.SUDOKU_SIZE; i++) {
+			if (mCells[i].getValue() == 0) {
+				singleNote(mCells[i]);
+			}
+		}
+	}
+
+	private void initNote() {
+		notelist = new ArrayList<Integer>();
+		for (int i = 1; i <= 9; i++) {
+			notelist.add(i);
+		}
+	}
+
+	private void createNote() {
+		for (int i = 0; i < notelist.size(); i++) {
+			mNote = mNote.toggleNumber(notelist.get(i));
+		}
+	}
 
 	private void update() {
 		switch (mEditMode) {
-			case MODE_EDIT_NOTE:
-				mSwitchNumNoteButton.setImageResource(R.drawable.pencil);
-				break;
-			case MODE_EDIT_VALUE:
-				mSwitchNumNoteButton.setImageResource(R.drawable.pencil_disabled);
-				break;
+		case MODE_EDIT_NOTE:
+			mSwitchNumNoteButton.setImageResource(R.drawable.pencil);
+			break;
+		case MODE_EDIT_VALUE:
+			mSwitchNumNoteButton.setImageResource(R.drawable.pencil_disabled);
+			break;
 		}
 
 		Map<Integer, Integer> valuesUseCount = null;

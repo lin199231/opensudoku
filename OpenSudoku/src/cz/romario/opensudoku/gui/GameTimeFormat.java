@@ -44,9 +44,9 @@ public class GameTimeFormat {
 	public String format(long time) {
 		mTimeText.setLength(0);
 		if (time > TIME_99_99) {
-			mGameTimeFormatter.format("%d:%02d", time / 60000, time / 1000 % 60);
+			mGameTimeFormatter.format("%d∑÷%02d√Î", time / 60000, time / 1000 % 60);
 		} else {
-			mGameTimeFormatter.format("%02d:%02d", time / 60000, time / 1000 % 60);
+			mGameTimeFormatter.format("%02d∑÷%02d√Î", time / 60000, time / 1000 % 60);
 		}
 		return mTimeText.toString();
 	}

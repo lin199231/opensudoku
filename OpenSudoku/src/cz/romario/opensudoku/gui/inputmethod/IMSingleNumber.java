@@ -42,9 +42,10 @@ import cz.romario.opensudoku.gui.SudokuBoardView;
 import cz.romario.opensudoku.gui.inputmethod.IMControlPanelStatePersister.StateBundle;
 
 /**
- * This class represents following type of number input workflow: Number buttons are displayed
- * in the sidebar, user selects one number and then fill values by tapping the cells.
- *
+ * This class represents following type of number input workflow: Number buttons
+ * are displayed in the sidebar, user selects one number and then fill values by
+ * tapping the cells.
+ * 
  * @author romario
  */
 public class IMSingleNumber extends InputMethod {
@@ -60,6 +61,7 @@ public class IMSingleNumber extends InputMethod {
 
 	private Handler mGuiHandler;
 	private Map<Integer, Button> mNumberButtons;
+
 	private ImageButton mSwitchNumNoteButton;
 
 	public IMSingleNumber() {
@@ -73,9 +75,10 @@ public class IMSingleNumber extends InputMethod {
 	}
 
 	/**
-	 * If set to true, buttons for numbers, which occur in {@link CellCollection}
-	 * more than {@link CellCollection#SUDOKU_SIZE}-times, will be highlighted.
-	 *
+	 * If set to true, buttons for numbers, which occur in
+	 * {@link CellCollection} more than {@link CellCollection#SUDOKU_SIZE}
+	 * -times, will be highlighted.
+	 * 
 	 * @param highlightCompletedValues
 	 */
 	public void setHighlightCompletedValues(boolean highlightCompletedValues) {
@@ -92,7 +95,7 @@ public class IMSingleNumber extends InputMethod {
 
 	@Override
 	protected void initialize(Context context, IMControlPanel controlPanel,
-							  SudokuGame game, SudokuBoardView board, HintsQueue hintsQueue) {
+			SudokuGame game, SudokuBoardView board, HintsQueue hintsQueue) {
 		super.initialize(context, controlPanel, game, board, hintsQueue);
 
 		game.getCells().addOnChangeListener(mOnCellsChangeListener);
@@ -115,33 +118,46 @@ public class IMSingleNumber extends InputMethod {
 
 	@Override
 	protected View createControlPanelView() {
-		LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		LayoutInflater inflater = (LayoutInflater) mContext
+				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		View controlPanel = inflater.inflate(R.layout.im_single_number, null);
 
 		mNumberButtons = new HashMap<Integer, Button>();
-		mNumberButtons.put(1, (Button) controlPanel.findViewById(R.id.button_1));
-		mNumberButtons.put(2, (Button) controlPanel.findViewById(R.id.button_2));
-		mNumberButtons.put(3, (Button) controlPanel.findViewById(R.id.button_3));
-		mNumberButtons.put(4, (Button) controlPanel.findViewById(R.id.button_4));
-		mNumberButtons.put(5, (Button) controlPanel.findViewById(R.id.button_5));
-		mNumberButtons.put(6, (Button) controlPanel.findViewById(R.id.button_6));
-		mNumberButtons.put(7, (Button) controlPanel.findViewById(R.id.button_7));
-		mNumberButtons.put(8, (Button) controlPanel.findViewById(R.id.button_8));
-		mNumberButtons.put(9, (Button) controlPanel.findViewById(R.id.button_9));
-		mNumberButtons.put(0, (Button) controlPanel.findViewById(R.id.button_clear));
+		mNumberButtons
+				.put(1, (Button) controlPanel.findViewById(R.id.button_1));
+		mNumberButtons
+				.put(2, (Button) controlPanel.findViewById(R.id.button_2));
+		mNumberButtons
+				.put(3, (Button) controlPanel.findViewById(R.id.button_3));
+		mNumberButtons
+				.put(4, (Button) controlPanel.findViewById(R.id.button_4));
+		mNumberButtons
+				.put(5, (Button) controlPanel.findViewById(R.id.button_5));
+		mNumberButtons
+				.put(6, (Button) controlPanel.findViewById(R.id.button_6));
+		mNumberButtons
+				.put(7, (Button) controlPanel.findViewById(R.id.button_7));
+		mNumberButtons
+				.put(8, (Button) controlPanel.findViewById(R.id.button_8));
+		mNumberButtons
+				.put(9, (Button) controlPanel.findViewById(R.id.button_9));
+		mNumberButtons.put(0,
+				(Button) controlPanel.findViewById(R.id.button_clear));
 
 		for (Integer num : mNumberButtons.keySet()) {
 			Button b = mNumberButtons.get(num);
 			b.setTag(num);
 			b.setOnClickListener(mNumberButtonClicked);
-		}
+		}// ÉèÖÃÊý×Ö¼àÌýÆ÷
 
-		mSwitchNumNoteButton = (ImageButton) controlPanel.findViewById(R.id.switch_num_note);
+		mSwitchNumNoteButton = (ImageButton) controlPanel
+				.findViewById(R.id.switch_num_note);
 		mSwitchNumNoteButton.setOnClickListener(new OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				mEditMode = mEditMode == MODE_EDIT_VALUE ? MODE_EDIT_NOTE : MODE_EDIT_VALUE;
+				mEditMode = mEditMode == MODE_EDIT_VALUE ? MODE_EDIT_NOTE
+						: MODE_EDIT_VALUE;
 				update();
 			}
 
@@ -172,15 +188,16 @@ public class IMSingleNumber extends InputMethod {
 
 	private void update() {
 		switch (mEditMode) {
-			case MODE_EDIT_NOTE:
-				mSwitchNumNoteButton.setImageResource(R.drawable.pencil);
-				break;
-			case MODE_EDIT_VALUE:
-				mSwitchNumNoteButton.setImageResource(R.drawable.pencil_disabled);
-				break;
+		case MODE_EDIT_NOTE:
+			mSwitchNumNoteButton.setImageResource(R.drawable.pencil);
+			break;
+		case MODE_EDIT_VALUE:
+			mSwitchNumNoteButton.setImageResource(R.drawable.pencil_disabled);
+			break;
 		}
 
-		// TODO: sometimes I change background too early and button stays in pressed state
+		// TODO: sometimes I change background too early and button stays in
+		// pressed state
 		// this is just ugly workaround
 		mGuiHandler.postDelayed(new Runnable() {
 			@Override
@@ -188,12 +205,17 @@ public class IMSingleNumber extends InputMethod {
 				for (Button b : mNumberButtons.values()) {
 					b.setBackgroundResource(R.drawable.btn_default_bg);
 					if (b.getTag().equals(mSelectedNumber)) {
-						b.setTextAppearance(mContext, android.R.style.TextAppearance_Large_Inverse);
+						b.setTextAppearance(mContext,
+								android.R.style.TextAppearance_Large_Inverse);
 						LightingColorFilter selBkgColorFilter = new LightingColorFilter(
-								mContext.getResources().getColor(R.color.im_number_button_selected_background), 0);
+								mContext.getResources()
+										.getColor(
+												R.color.im_number_button_selected_background),
+								0);
 						b.getBackground().setColorFilter(selBkgColorFilter);
 					} else {
-						b.setTextAppearance(mContext, android.R.style.TextAppearance_Widget_Button);
+						b.setTextAppearance(mContext,
+								android.R.style.TextAppearance_Widget_Button);
 						b.getBackground().setColorFilter(null);
 					}
 				}
@@ -203,8 +225,10 @@ public class IMSingleNumber extends InputMethod {
 					valuesUseCount = mGame.getCells().getValuesUseCount();
 
 				if (mHighlightCompletedValues) {
-					int completedTextColor = mContext.getResources().getColor(R.color.im_number_button_completed_text);
-					for (Map.Entry<Integer, Integer> entry : valuesUseCount.entrySet()) {
+					int completedTextColor = mContext.getResources().getColor(
+							R.color.im_number_button_completed_text);
+					for (Map.Entry<Integer, Integer> entry : valuesUseCount
+							.entrySet()) {
 						boolean highlightValue = entry.getValue() >= CellCollection.SUDOKU_SIZE;
 						if (highlightValue) {
 							Button b = mNumberButtons.get(entry.getKey());
@@ -218,10 +242,12 @@ public class IMSingleNumber extends InputMethod {
 				}
 
 				if (mShowNumberTotals) {
-					for (Map.Entry<Integer, Integer> entry : valuesUseCount.entrySet()) {
+					for (Map.Entry<Integer, Integer> entry : valuesUseCount
+							.entrySet()) {
 						Button b = mNumberButtons.get(entry.getKey());
 						if (!b.getTag().equals(mSelectedNumber))
-							b.setText(entry.getKey() + " (" + entry.getValue() + ")");
+							b.setText(entry.getKey() + " (" + entry.getValue()
+									+ ")");
 						else
 							b.setText("" + entry.getKey());
 					}
@@ -240,32 +266,39 @@ public class IMSingleNumber extends InputMethod {
 		int selNumber = mSelectedNumber;
 
 		switch (mEditMode) {
-			case MODE_EDIT_NOTE:
-				if (selNumber == 0) {
-					mGame.setCellNote(cell, CellNote.EMPTY);
-				} else if (selNumber > 0 && selNumber <= 9) {
-					mGame.setCellNote(cell, cell.getNote().toggleNumber(selNumber));
-				}
-				break;
-			case MODE_EDIT_VALUE:
-				if (selNumber >= 0 && selNumber <= 9) {
-					if (!mNumberButtons.get(selNumber).isEnabled()) {
-						// Number requested has been disabled but it is still selected. This means that
-						// this number can be no longer entered, however any of the existing fields
-						// with this number can be deleted by repeated touch
-						if (selNumber == cell.getValue()) {
-							mGame.setCellValue(cell, 0);
-						}
-					} else {
-						// Normal flow, just set the value (or clear it if it is repeated touch)
-						if (selNumber == cell.getValue()) {
-							selNumber = 0;
-						}
-						mGame.setCellValue(cell, selNumber);
+		case MODE_EDIT_NOTE:
+			if (selNumber == 0) {
+				mGame.setCellNote(cell, CellNote.EMPTY);
+			} else if (selNumber > 0 && selNumber <= 9) {
+				mGame.setCellNote(cell, cell.getNote().toggleNumber(selNumber));
+			}
+			break;
+		case MODE_EDIT_VALUE:
+			if (selNumber >= 0 && selNumber <= 9) {
+				if (!mNumberButtons.get(selNumber).isEnabled()) {
+					// Number requested has been disabled but it is still
+					// selected. This means that
+					// this number can be no longer entered, however any of the
+					// existing fields
+					// with this number can be deleted by repeated touch
+					if (selNumber == cell.getValue()) {
+						mGame.setCellValue(cell, 0);
 					}
+				} else {
+					// Normal flow, just set the value (or clear it if it is
+					// repeated touch)
+					if (selNumber == cell.getValue()) {
+						selNumber = 0;
+					}
+					mGame.setCellValue(cell, selNumber);
 				}
-				break;
+			}
+			break;
 		}
+
+	}
+
+	private void autoNoted() {
 
 	}
 

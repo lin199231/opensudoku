@@ -274,9 +274,9 @@ public class CellCollection {
 				Cell cell = mCells[r][c];
 
 				cell.initCollection(this, r, c,
-						mSectors[((c / 3) * 3) + (r / 3)],
-						mRows[c],
-						mColumns[r]
+						mSectors[((r / 3) * 3) + (c / 3)],
+						mRows[r],
+						mColumns[c]
 				);
 			}
 		}
